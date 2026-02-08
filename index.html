@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Valentine?</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      background: radial-gradient(circle at top, #ffe6ef, #fff);
+      overflow:hidden;
+    }
+
+    .card{
+      width:min(620px, 92vw);
+      background:rgba(255,255,255,.88);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:22px;
+      padding:26px 20px;
+      box-shadow:0 12px 40px rgba(0,0,0,.08);
+      text-align:center;
+      backdrop-filter: blur(10px);
+    }
+
+    h1{ margin:0 0 6px; font-size:1.75rem; }
+    p{ margin:0 0 14px; color:rgba(0,0,0,.65); }
+
+    .question{
+      margin:16px auto 8px;
+      font-size:1.15rem;
+      font-weight:800;
+      text-align:left;
+      width:min(520px, 100%);
+    }
+
+    .options{
+      display:grid;
+      gap:10px;
+      margin:10px auto 6px;
+      text-align:left;
+      width:min(520px, 100%);
+    }
+
+    label{
+      display:flex; gap:10px; align-items:flex-start;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.08);
+      background:#fff;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+
+    label:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(0,0,0,.06);
+      border-color: rgba(255, 77, 140, .25);
+    }
+
+    input[type="radio"]{ margin-top:3px; }
+
+    .btns{
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    button{
+      border:0;
+      border-radius:999px;
+      padding:12px 18px;
+      font-weight:800;
+      font-size:1rem;
+      cursor:pointer;
+      transition: transform .08s ease, filter .12s ease;
+    }
+
+    button:active{ transform: scale(.98); }
+
+    .primary{
+      background: linear-gradient(135deg, #ff4d8c, #ff7bb3);
+      color:white;
+    }
+
+    .ghost{
+      background: rgba(0,0,0,.06);
+      color: rgba(0,0,0,.8);
+    }
+
+    .result{
+      margin-top:14px;
+      font-weight:900;
+      font-size:1.2rem;
+      display:none;
+      text-align:center;
+      width:min(520px, 100%);
+      margin-left:auto;
+      margin-right:auto;
+      line-height:1.5;
+      white-space:pre-line;
+    }
+
+    .hidden{ display:none; }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <h1>Valentine? 💗</h1>
+    <p id="subtitle">Answer the first question first 👀</p>
+
+    <form id="valForm">
+      <!-- STEP 1: Question 1 only -->
+      <section id="step1">
+        <div class="question">Will you be my Valentine?</div>
+        <div class="options">
+          <label>
+            <input type="radio" name="answer" value="Yes" />
+            <div><strong>Yes</strong> 😳💘</div>
+          </label>
+
+          <label>
+            <input type="radio" name="answer" value="No" />
+            <div><strong>No</strong> 🥲</div>
+          </label>
+        </div>
+      </section>
+
+      <!-- STEP 2: Question 2 only (hidden at start) -->
+      <section id="step2" class="hidden">
+        <div class="question">Where</div>
+        <div class="options">
+          <label>
+            <input type="radio" name="where" value="Samgyup date + Froyo (After NSTP)" />
+            <div>Samgyup date + Froyo ( After NSTP)</div>
+          </label>
+
+          <label>
+            <input type="radio" name="where" value="Taco Bell + Froyo (After NSTP)" />
+            <div>Taco Bell + Froyo ( After NSTP)</div>
+          </label>
+
+          <label>
+            <input type="radio" name="where" value="Binondo Date (After NSTP or Sunday)" />
+            <div>Binondo Date ( After NSTP or Sunday)</div>
+          </label>
+        </div>
+      </section>
+
+      <div class="btns">
+        <button type="submit" class="primary" id="submitBtn">Submit</button>
+        <button type="button" id="resetBtn" class="ghost">Reset</button>
+      </div>
+    </form>
+
+    <div id="result" class="result"></div>
+  </main>
+
+  <script>
+    const form = document.getElementById("valForm");
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    const result = document.getElementById("result");
+    const resetBtn = document.getElementById("resetBtn");
+    const subtitle = document.getElementById("subtitle");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function clearRadios(name) {
+      const checked = form.querySelector(`input[name="${name}"]:checked`);
+      if (checked) checked.checked = false;
+    }
+
+    function showMessage(text, ms = 900) {
+      result.style.display = "block";
+      result.textContent = text;
+      if (ms > 0) {
+        setTimeout(() => {
+          result.style.display = "none";
+          result.textContent = "";
+        }, ms);
+      }
+    }
+
+    function goToStep1() {
+      step1.classList.remove("hidden");
+      step2.classList.add("hidden");
+      subtitle.textContent = "Answer the first question first 👀";
+      submitBtn.textContent = "Submit";
+      clearRadios("answer");
+      clearRadios("where");
+    }
+
+    function goToStep2() {
+      step1.classList.add("hidden");
+      step2.classList.remove("hidden");
+      subtitle.textContent = "Now answer the second question 👀";
+      submitBtn.textContent = "Submit";
+      clearRadios("where");
+    }
+
+    function showFinal() {
+      const finalMsg =
+`I know na before this palagi tayong nag aaway and umaabot sa time na gusto na natin maghiwalay.
+I know na super late na netong aya ko and mukhang ginawa ko lang toh para lang mawala inis mo.
+Pero nung isang araw ko pa talaga toh naisip and ginawa kasi syempre comp eng ka eh kaya naisip ko mag patulong kay gpt para makagawa code.
+I love you baby ko, see you.`;
+
+      // hide everything except final message
+      form.classList.add("hidden");
+      subtitle.classList.add("hidden");
+      result.style.display = "block";
+      result.textContent = finalMsg;
+    }
+
+    // When Q1 is answered:
+    form.addEventListener("change", (e) => {
+      if (e.target.name !== "answer") return;
+
+      // If NO -> "Pumili ka" then back to step1 (no selection)
+      if (e.target.value === "No") {
+        showMessage("Pumili ka", 900);
+        setTimeout(() => {
+          goToStep1();
+        }, 900);
+        return;
+      }
+
+      // If YES -> go to step2 only
+      if (e.target.value === "Yes") {
+        goToStep2();
+      }
+    });
+
+    // Submit behavior depends on current step:
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      // If currently on Step 1, force them to choose
+      if (!step1.classList.contains("hidden")) {
+        showMessage("Answer the first question first 🙂", 900);
+        return;
+      }
+
+      // Step 2: require WHERE then show final
+      const pickedWhere = form.querySelector('input[name="where"]:checked');
+      if (!pickedWhere) {
+        showMessage("Pick where we’re going 🙂", 900);
+        return;
+      }
+
+      showFinal();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      // if final is showing, bring everything back
+      form.classList.remove("hidden");
+      subtitle.classList.remove("hidden");
+      result.style.display = "none";
+      result.textContent = "";
+      goToStep1();
+    });
+  </script>
+</body>
+</html>
