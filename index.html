@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Valentine?</title>
+
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
@@ -107,6 +108,9 @@
 
     .hidden{ display:none; }
   </style>
+
+  <!-- EmailJS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 
 <body>
@@ -115,7 +119,7 @@
     <p id="subtitle">Answer the first question first 👀</p>
 
     <form id="valForm">
-      <!-- STEP 1: Question 1 only -->
+      <!-- STEP 1 -->
       <section id="step1">
         <div class="question">Will you be my Valentine?</div>
         <div class="options">
@@ -131,7 +135,7 @@
         </div>
       </section>
 
-      <!-- STEP 2: Question 2 only (hidden at start) -->
+      <!-- STEP 2 -->
       <section id="step2" class="hidden">
         <div class="question">Where</div>
         <div class="options">
@@ -162,6 +166,13 @@
   </main>
 
   <script>
+    // ✅ Your EmailJS credentials
+    const EMAILJS_SERVICE_ID = "service_7i9wqnh";
+    const EMAILJS_TEMPLATE_ID = "template_n2sthyq";
+    const EMAILJS_PUBLIC_KEY  = "giAAXK0kJX6aEC8Ee";
+
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+
     const form = document.getElementById("valForm");
     const step1 = document.getElementById("step1");
     const step2 = document.getElementById("step2");
@@ -210,54 +221,76 @@ I know na super late na netong aya ko and mukhang ginawa ko lang toh para lang m
 Pero nung isang araw ko pa talaga toh naisip and ginawa kasi syempre comp eng ka eh kaya naisip ko mag patulong kay gpt para makagawa code.
 I love you baby ko, see you.`;
 
-      // hide everything except final message
       form.classList.add("hidden");
       subtitle.classList.add("hidden");
       result.style.display = "block";
       result.textContent = finalMsg;
     }
 
-    // When Q1 is answered:
+    async function sendResponseEmail(answer1, whereAnswer) {
+      // These keys MUST match your EmailJS template variables
+      const templateParams = {
+        to_email: "reishen308@gmail.com",
+        title: "Valentine Form Response 💗",
+        name: "Valentine Form",
+        message: `Answer: ${answer1}\nWhere: ${whereAnswer}`,
+        answer: answer1,
+        where: whereAnswer,
+        submitted_at: new Date().toLocaleString()
+      };
+
+      return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+    }
+
     form.addEventListener("change", (e) => {
       if (e.target.name !== "answer") return;
 
-      // If NO -> "Pumili ka" then back to step1 (no selection)
       if (e.target.value === "No") {
         showMessage("Pumili ka", 900);
-        setTimeout(() => {
-          goToStep1();
-        }, 900);
+        setTimeout(() => goToStep1(), 900);
         return;
       }
 
-      // If YES -> go to step2 only
       if (e.target.value === "Yes") {
         goToStep2();
       }
     });
 
-    // Submit behavior depends on current step:
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      // If currently on Step 1, force them to choose
       if (!step1.classList.contains("hidden")) {
         showMessage("Answer the first question first 🙂", 900);
         return;
       }
 
-      // Step 2: require WHERE then show final
       const pickedWhere = form.querySelector('input[name="where"]:checked');
       if (!pickedWhere) {
         showMessage("Pick where we’re going 🙂", 900);
         return;
       }
 
-      showFinal();
+      const pickedAnswer = form.querySelector('input[name="answer"]:checked');
+      const answer1 = pickedAnswer ? pickedAnswer.value : "(none)";
+      const whereAnswer = pickedWhere.value;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending…";
+
+      try {
+        await sendResponseEmail(answer1, whereAnswer);
+        showMessage("Sent! 💌", 700);
+        setTimeout(() => showFinal(), 700);
+      } catch (err) {
+        console.error(err);
+        showMessage("Failed to send email. Check EmailJS template variables.", 1500);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit";
+      }
     });
 
     resetBtn.addEventListener("click", () => {
-      // if final is showing, bring everything back
       form.classList.remove("hidden");
       subtitle.classList.remove("hidden");
       result.style.display = "none";
